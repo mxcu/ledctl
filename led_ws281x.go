@@ -22,30 +22,39 @@ type WS281x struct {
 
 const ledReset_us = 55
 
-// NewWS281x creates a new WS281x LED strip controller. Here are the parameters:
-//
-//   - numPixels is the number of pixels in the strip.
-//   - numColors is the number of colors per pixel. This is usually 3, but some
-//     strips have a white component as well.
-//   - order is the color order of the pixels. This is usually GRB, but some
-//     strips have different orders.
-//   - freq is the frequency to use for the PWM. This is usually 800000.
-//   - dma is the DMA channel to use. This is usually 10, but it depends on
-//     which Pi you're using. BE CAREFUL, this may damage your Pi if you get it
-//     wrong.
-//   - pins is a list of GPIO pins to use for the PWM. Usually, this is a
-//     length-1 list containing the pin that you're using for the data line.
-func NewWS281x(numPixels int, numColors int, order ColorOrder, freq uint, dma int, pins []int) (*WS281x, error) {
+type WS281xConfig struct {
+	// NumPixels is the number of pixels in the strip.
+	NumPixels int
+	// NumColors is the number of colors per pixel. This is usually 3, but some
+	// strips have a white component as well.
+	NumColors int
+	// ColorOrder is the color order of the pixels. This is usually GRB, but
+	// some strips have different orders.
+	ColorOrder ColorOrder
+	// PWMFrequency is the frequency to use for the PWM. This is usually
+	// 800000.
+	PWMFrequency uint
+	// DMAChannel is the DMA channel to use. This is usually 10, but it depends
+	// on which Pi you're using. BE CAREFUL, this may damage your Pi if you get
+	// it wrong.
+	DMAChannel int
+	// GPIOPins is a list of GPIO pins to use for the PWM. Usually, this is a
+	// single-item list containing the pin that you're using for the data line.
+	GPIOPins []int
+}
+
+// NewWS281x creates a new WS281x LED strip controller.
+func NewWS281x(config WS281xConfig) (*WS281x, error) {
 	rp, err := rpi.NewRPi()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't init RPi: %v", err)
 	}
 
-	offsets := offsets[order]
+	offsets := offsets[config.ColorOrder]
 	wa := WS281x{
-		numPixels: numPixels,
-		numColors: numColors,
-		pixels:    make([]byte, numPixels*numColors),
+		numPixels: config.NumPixels,
+		numColors: config.NumColors,
+		pixels:    make([]byte, config.NumPixels*config.NumColors),
 		rp:        rp,
 		g:         offsets[0],
 		r:         offsets[1],
@@ -53,14 +62,14 @@ func NewWS281x(numPixels int, numColors int, order ColorOrder, freq uint, dma in
 		w:         offsets[3],
 	}
 
-	bytes := wa.pwmByteCount(freq)
+	bytes := wa.pwmByteCount(config.PWMFrequency)
 	wa.pixDMA, err = rp.GetDMABuf(bytes)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get DMA buffer: %v", err)
 	}
 
 	wa.pixDMAUint = wa.pixDMA.Uint32Slice()
-	err = rp.InitDMA(dma)
+	err = rp.InitDMA(config.DMAChannel)
 	if err != nil {
 		rp.FreeDMABuf(wa.pixDMA) // Ignore error
 		return nil, fmt.Errorf("couldn't init registers: %v", err)
@@ -72,13 +81,24 @@ func NewWS281x(numPixels int, numColors int, order ColorOrder, freq uint, dma in
 		return nil, fmt.Errorf("couldn't init GPIO: %v", err)
 	}
 
-	err = rp.InitPWM(freq, wa.pixDMA, bytes, pins)
+	err = rp.InitPWM(config.PWMFrequency, wa.pixDMA, bytes, config.GPIOPins)
 	if err != nil {
 		rp.FreeDMABuf(wa.pixDMA) // Ignore error
 		return nil, fmt.Errorf("couldn't init PWM: %v", err)
 	}
 
 	return &wa, nil
+}
+
+// Close closes the WS281x LED strip controller.
+func (ws *WS281x) Close() error {
+	ws.rp.StopPWM()
+
+	if err := ws.rp.FreeDMABuf(ws.pixDMA); err != nil {
+		return fmt.Errorf("couldn't free DMA buffer: %v", err)
+	}
+
+	return nil
 }
 
 // pwmByteCount calculates the number of bytes needed to store the data for PWM

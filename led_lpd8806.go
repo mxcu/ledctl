@@ -20,20 +20,27 @@ type LPD8806 struct {
 	w         int
 }
 
-// NewLPD8806 creates a new LPD8806 LED strip controller. Here are the
-// parameters:
-//
-//   - dev is the SPI device to use. Usually, this is "/dev/spidev0.0".
-//   - numPixels is the number of pixels in the strip.
-//   - numColors is the number of colors per pixel. This is usually 3, but some
-//     strips have a white component as well.
-//   - spiSpeed is the speed to use for the SPI. This is usually 12000000.
-//   - order is the color order of the pixels. This is usually GRB, but some
-//     strips have different orders.
-func NewLPD8806(dev Device, numPixels int, numColors int, spiSpeed uint32, order ColorOrder) (*LPD8806, error) {
-	numReset := (numPixels + 31) / 32
-	val := make([]byte, numPixels*numColors+numReset)
-	offsets := offsets[order]
+// LPD8806Config is the configuration for an LPD8806 LED strip.
+type LPD8806Config struct {
+	// Device is the SPI device to use. Usually, this is "/dev/spidev0.0".
+	Device Device
+	// NumPixels is the number of pixels in the strip.
+	NumPixels int
+	// NumColors is the number of colors per pixel. This is usually 3, but some
+	// strips have a white component as well.
+	NumColors int
+	// SPISpeed is the speed to use for the SPI. This is usually 12000000.
+	SPISpeed uint32
+	// ColorOrder is the color order of the pixels. This is usually GRB, but
+	// some strips have different orders.
+	ColorOrder ColorOrder
+}
+
+// NewLPD8806 creates a new LPD8806 LED strip controller.
+func NewLPD8806(config LPD8806Config) (*LPD8806, error) {
+	numReset := (config.NumPixels + 31) / 32
+	val := make([]byte, config.NumPixels*config.NumColors+numReset)
+	offsets := offsets[config.ColorOrder]
 
 	rp, err := rpi.NewRPi()
 	if err != nil {
@@ -42,30 +49,35 @@ func NewLPD8806(dev Device, numPixels int, numColors int, spiSpeed uint32, order
 
 	la := LPD8806{
 		rp:        rp,
-		dev:       dev,
-		pixels:    val[:numPixels*numColors],
+		dev:       config.Device,
+		pixels:    val[:config.NumPixels*config.NumColors],
 		buffer:    val,
-		numColors: numColors,
-		numPixels: numPixels,
+		numColors: config.NumColors,
+		numPixels: config.NumPixels,
 		g:         offsets[0],
 		r:         offsets[1],
 		b:         offsets[2],
 		w:         offsets[3],
 	}
 
-	if spiSpeed != 0 {
-		err := rp.SetSPISpeed(la.dev.Fd(), spiSpeed)
+	if config.SPISpeed != 0 {
+		err := rp.SetSPISpeed(la.dev.Fd(), config.SPISpeed)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't set SPI speed: %v", err)
 		}
 	}
 
 	firstReset := make([]byte, numReset)
-	_, err = dev.Write(firstReset)
+	_, err = la.dev.Write(firstReset)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't reset: %v", err)
 	}
 	return &la, nil
+}
+
+// Close does nothing.
+func (la *LPD8806) Close() error {
+	return nil
 }
 
 // RPi returns the RPi object used to control the SPI.
