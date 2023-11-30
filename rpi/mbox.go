@@ -3,13 +3,14 @@ package rpi
 import (
 	"errors"
 	"fmt"
-	mmap "github.com/edsrzf/mmap-go"
 	"log"
 	"os"
 	"path"
 	"reflect"
 	"syscall"
 	"unsafe"
+
+	mmap "github.com/edsrzf/mmap-go"
 )
 
 // Many details here are from the BCM2835 reference at

@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	mmap "github.com/edsrzf/mmap-go"
 	"os"
+
+	mmap "github.com/edsrzf/mmap-go"
 )
 
 type RPi struct {
