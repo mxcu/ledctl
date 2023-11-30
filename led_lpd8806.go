@@ -26,20 +26,19 @@ type LPD8806Config struct {
 	Device Device
 	// NumPixels is the number of pixels in the strip.
 	NumPixels int
-	// NumColors is the number of colors per pixel. This is usually 3, but some
-	// strips have a white component as well.
-	NumColors int
 	// SPISpeed is the speed to use for the SPI. This is usually 12000000.
 	SPISpeed uint32
 	// ColorOrder is the color order of the pixels. This is usually GRB, but
 	// some strips have different orders.
 	ColorOrder ColorOrder
+	// ColorModel is the color model of the pixels.
+	ColorModel ColorModel
 }
 
 // NewLPD8806 creates a new LPD8806 LED strip controller.
 func NewLPD8806(config LPD8806Config) (*LPD8806, error) {
 	numReset := (config.NumPixels + 31) / 32
-	val := make([]byte, config.NumPixels*config.NumColors+numReset)
+	val := make([]byte, config.NumPixels*config.ColorModel.NumColors()+numReset)
 	offsets := offsets[config.ColorOrder]
 
 	rp, err := rpi.NewRPi()
@@ -50,9 +49,9 @@ func NewLPD8806(config LPD8806Config) (*LPD8806, error) {
 	la := LPD8806{
 		rp:        rp,
 		dev:       config.Device,
-		pixels:    val[:config.NumPixels*config.NumColors],
+		pixels:    val[:config.NumPixels*config.ColorModel.NumColors()],
 		buffer:    val,
-		numColors: config.NumColors,
+		numColors: config.ColorModel.NumColors(),
 		numPixels: config.NumPixels,
 		g:         offsets[0],
 		r:         offsets[1],

@@ -39,6 +39,27 @@ var offsets = map[ColorOrder][]int{
 	RBGOrder: {2, 0, 1, -1},
 }
 
+// ColorModel is an enumeration of the possible color models for the color
+// pixels.
+type ColorModel int
+
+const (
+	RGBWModel ColorModel = iota
+	RGBModel
+)
+
+// NumColors returns the number of colors in the color model.
+func (m ColorModel) NumColors() int {
+	switch m {
+	case RGBWModel:
+		return 4
+	case RGBModel:
+		return 3
+	default:
+		return 0
+	}
+}
+
 func abs(i int) int {
 	if i < 0 {
 		return -i

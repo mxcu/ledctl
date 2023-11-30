@@ -22,15 +22,15 @@ type WS281x struct {
 
 const ledReset_us = 55
 
+// WS281xConfig is the configuration for a WS281x LED strip.
 type WS281xConfig struct {
 	// NumPixels is the number of pixels in the strip.
 	NumPixels int
-	// NumColors is the number of colors per pixel. This is usually 3, but some
-	// strips have a white component as well.
-	NumColors int
 	// ColorOrder is the color order of the pixels. This is usually GRB, but
 	// some strips have different orders.
 	ColorOrder ColorOrder
+	// ColorModel is the color model of the pixels.
+	ColorModel ColorModel
 	// PWMFrequency is the frequency to use for the PWM. This is usually
 	// 800000.
 	PWMFrequency uint
@@ -53,8 +53,8 @@ func NewWS281x(config WS281xConfig) (*WS281x, error) {
 	offsets := offsets[config.ColorOrder]
 	wa := WS281x{
 		numPixels: config.NumPixels,
-		numColors: config.NumColors,
-		pixels:    make([]byte, config.NumPixels*config.NumColors),
+		numColors: config.ColorModel.NumColors(),
+		pixels:    make([]byte, config.NumPixels*config.ColorModel.NumColors()),
 		rp:        rp,
 		g:         offsets[0],
 		r:         offsets[1],
