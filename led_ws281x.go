@@ -3,7 +3,7 @@ package ledctl
 import (
 	"fmt"
 
-	rpi "libdb.so/ledctl/rpi"
+	rpi "github.com/mxcu/ledctl/rpi"
 )
 
 // WS281x controls a WS281x LED strip.

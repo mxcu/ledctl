@@ -3,7 +3,7 @@ package ledctl
 import (
 	"fmt"
 
-	rpi "libdb.so/ledctl/rpi"
+	rpi "github.com/mxcu/ledctl/rpi"
 )
 
 // LPD8806 controls an LPD8806 LED strip.

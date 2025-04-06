@@ -1,5 +1,3 @@
-github.com/Jon-Bright/ledctl v0.0.0-20220811175751-98f2a0ba0a4b h1:u0+8Yyo6gZuZyHDFnuWcwme5bWwJk9p4Bi+M7YO3HH0=
-github.com/Jon-Bright/ledctl v0.0.0-20220811175751-98f2a0ba0a4b/go.mod h1:YnJVnKYzGnL9rQUfQHAfN8FVtKF5C1IPPmdsEcKWhAM=
 github.com/edsrzf/mmap-go v1.0.0 h1:CEBF7HpRnUCSJgGUb5h1Gm7e3VkmVDrR8lvWVLtrOFw=
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
 golang.org/x/sys v0.0.0-20201231184435-2d18734c6014 h1:joucsQqXmyBVxViHCPFjG3hx8JzIFSaym3l3MM/Jsdg=
