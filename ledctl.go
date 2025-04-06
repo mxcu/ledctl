@@ -17,26 +17,29 @@ const (
 	GBROrder
 	RGBOrder
 	RBGOrder
+	GRBWOrder
 )
 
 // StringToOrder is a map from string representations of the color order to
 // the ColorOrder.
 var StringToOrder = map[string]ColorOrder{
-	"GRB": GRBOrder,
-	"BRG": BRGOrder,
-	"BGR": BGROrder,
-	"GBR": GBROrder,
-	"RGB": RGBOrder,
-	"RBG": RBGOrder,
+	"GRB":  GRBOrder,
+	"BRG":  BRGOrder,
+	"BGR":  BGROrder,
+	"GBR":  GBROrder,
+	"RGB":  RGBOrder,
+	"RBG":  RBGOrder,
+	"GRBW": GRBWOrder,
 }
 
 var offsets = map[ColorOrder][]int{
-	GRBOrder: {0, 1, 2, -1},
-	BRGOrder: {2, 1, 0, -1},
-	BGROrder: {1, 2, 0, -1},
-	GBROrder: {0, 2, 1, -1},
-	RGBOrder: {1, 0, 2, -1},
-	RBGOrder: {2, 0, 1, -1},
+	GRBOrder:  {0, 1, 2, -1},
+	BRGOrder:  {2, 1, 0, -1},
+	BGROrder:  {1, 2, 0, -1},
+	GBROrder:  {0, 2, 1, -1},
+	RGBOrder:  {1, 0, 2, -1},
+	RBGOrder:  {2, 0, 1, -1},
+	GRBWOrder: {0, 1, 2, 3},
 }
 
 // ColorModel is an enumeration of the possible color models for the color
